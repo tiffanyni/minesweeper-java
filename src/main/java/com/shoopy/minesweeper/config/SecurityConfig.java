@@ -12,8 +12,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/helloworld").permitAll() // allow this endpoint
-                        .anyRequest().authenticated()               // everything else locked
+                        .anyRequest().permitAll()               // everything unlocked
                 )
                 .formLogin(form -> form
                         .permitAll() // allow login page
