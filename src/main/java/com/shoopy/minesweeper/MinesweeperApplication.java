@@ -7,18 +7,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+
 @SpringBootApplication
 @RestController
 public class MinesweeperApplication {
 
+    private ArrayList<String> messages = new ArrayList<>();
+
     @PostMapping("/tellShoopy")
-    public String createUser(@RequestBody String message) {
+    public String tellShoopy(@RequestBody String message) {
+        messages.add(message);
         return "Shoopy appreciates your message!!! Your message: " + message;
     }
 
-    @GetMapping("/helloworld")
+    @GetMapping("/getShoopy")
     public String sayHello() {
-        return "Hello World";
+        StringBuilder ans = new StringBuilder();
+        for (String s : messages) {
+            ans.append(s).append(" ");
+        }
+        return ans.toString();
     }
 
 	public static void main(String[] args) {
