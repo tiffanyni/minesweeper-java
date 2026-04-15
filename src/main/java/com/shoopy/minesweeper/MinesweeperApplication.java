@@ -11,7 +11,7 @@ public class MinesweeperApplication {
 
     @GetMapping("/helloworld")
     public String sayHello() {
-        return "Hello My handsome AHUI";
+        return "Hello World";
     }
 
 	public static void main(String[] args) {
