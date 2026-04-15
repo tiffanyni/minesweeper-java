@@ -1,1 +1,1 @@
-# minesweeper-java
+# Shoopy's Minesweeper!!!
