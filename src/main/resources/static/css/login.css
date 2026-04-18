@@ -69,3 +69,14 @@ button:hover {
     font-size: 2em;
     margin-bottom: 10px;
 }
+.login-error {
+    color: #d32f2f;
+    background: #fff0f0;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    margin: 10px 0 20px 0;
+    padding: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    display: none;
+}
