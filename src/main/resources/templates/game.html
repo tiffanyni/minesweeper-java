@@ -5,41 +5,41 @@
     <link rel="stylesheet" href="/css/game.css">
 </head>
 <body>
-<div class="container">
-    <h1>Welcome to Minesweeper</h1>
-    <div class="game-info">
-        <div class="info-box">
-            <div class="info-label">Mines</div>
-            <div class="info-value" id="mineCount">0</div>
+    <div class="container">
+        <h1>Welcome to Minesweeper</h1>
+        <div class="game-info">
+            <div class="info-box">
+                <div class="info-label">Mines</div>
+                <div class="info-value" id="mineCount">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Flags</div>
+                <div class="info-value" id="flagCount">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Cells Left</div>
+                <div class="info-value" id="cellsLeft">0</div>
+            </div>
         </div>
-        <div class="info-box">
-            <div class="info-label">Flags</div>
-            <div class="info-value" id="flagCount">0</div>
+        <div class="difficulty-selector">
+            <button class="difficulty-btn active" data-difficulty="easy">Easy (8x8 - 10)</button>
+            <button class="difficulty-btn" data-difficulty="medium">Medium (10x10 - 30)</button>
+            <button class="difficulty-btn" data-difficulty="hard">Hard (12x12 - 60)</button>
         </div>
-        <div class="info-box">
-            <div class="info-label">Cells Left</div>
-            <div class="info-value" id="cellsLeft">0</div>
+        <div class="game-board" id="gameBoard"></div>
+        <div class="controls">
+            <button class="btn-reset" id="resetBtn">New Game</button>
+        </div>
+        <div class="game-status" id="gameStatus"></div>
+        <div class="legend">
+            <strong>How to Play:</strong>
+            <div class="legend-item">🖱️ <strong>Left Click:</strong> Reveal a cell</div>
+            <div class="legend-item">🖱️ <strong>Right Click:</strong> Flag/unflag a mine</div>
+            <div class="legend-item">💡 Numbers show how many mines are adjacent to that cell</div>
+            <div class="legend-item">⛳ Flag all mines and reveal all safe cells to win!</div>
+            <div id="message" style="display:none; margin-top:15px; padding:10px; background-color:#e3f2fd; border-radius:5px; color:#1565c0; font-weight:bold;"></div>
         </div>
     </div>
-    <div class="difficulty-selector">
-        <button class="difficulty-btn active" data-difficulty="easy">Easy (8x8 - 10)</button>
-        <button class="difficulty-btn" data-difficulty="medium">Medium (10x10 - 30)</button>
-        <button class="difficulty-btn" data-difficulty="hard">Hard (12x12 - 60)</button>
-    </div>
-    <div class="game-board" id="gameBoard"></div>
-    <div class="controls">
-        <button class="btn-reset" id="resetBtn">New Game</button>
-    </div>
-    <div class="game-status" id="gameStatus"></div>
-    <div class="legend">
-        <strong>How to Play:</strong>
-        <div class="legend-item">🖱️ <strong>Left Click:</strong> Reveal a cell</div>
-        <div class="legend-item">🖱️ <strong>Right Click:</strong> Flag/unflag a mine</div>
-        <div class="legend-item">💡 Numbers show how many mines are adjacent to that cell</div>
-        <div class="legend-item">⛳ Flag all mines and reveal all safe cells to win!</div>
-        <div id="message" style="display:none; margin-top:15px; padding:10px; background-color:#e3f2fd; border-radius:5px; color:#1565c0; font-weight:bold;"></div>
-    </div>
-</div>
 <script src="/js/game.js"></script>
 </body>
 </html>
