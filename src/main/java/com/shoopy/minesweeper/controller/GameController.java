@@ -10,4 +10,6 @@ public class GameController {
     public String game() {
         return "game"; // -> templates/game.html
     }
+
+    //TODO: update so that it passes board generator's board into game.html
 }
