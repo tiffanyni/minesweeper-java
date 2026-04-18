@@ -195,71 +195,7 @@ function renderBoard() {
     }
 }
 
-// API Functions
-async function sendMessage(message) {
-    try {
-        const response = await fetch('/tellShoopy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: message
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.text();
-        console.log('Server response:', data);
-        return data;
-    } catch (err) {
-        console.error('Error sending message:', err);
-        return 'Error sending message';
-    }
-}
-
-async function getMessages() {
-    try {
-        const response = await fetch('/getShoopy');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.text();
-        return data;
-    } catch (err) {
-        console.error('Error getting messages:', err);
-        return 'Error loading messages';
-    }
-}
-
-// Load messages immediately as page loads
 document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Send initial messages first
-        console.log('Sending initial messages...');
-        await sendMessage('Welcome to Minesweeper!');
-        await sendMessage('Good luck finding all the mines!');
-        await sendMessage('Use left click to reveal and right click to flag.');
-         await sendMessage('Hello Shoopy!');
-        await sendMessage('Minesweeper game started!');
-        console.log('Initial messages sent');
-
-        // Now fetch all messages
-        console.log('Fetching messages...');
-        const messages = await getMessages();
-        console.log('Messages received:', messages);
-        const messageElement = document.getElementById('message');
-        console.log('Message element:', messageElement);
-        if (messageElement) {
-            messageElement.textContent = '📨 Messages: ' + (messages || 'No messages yet');
-            messageElement.style.display = 'block';
-            console.log('Message displayed successfully');
-        } else {
-            console.error('Message element not found');
-        }
-    } catch (err) {
-        console.error('Failed to load messages:', err);
-    }
 
     // Event listeners
     document.getElementById('resetBtn').addEventListener('click', initGame);
