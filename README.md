@@ -40,6 +40,14 @@ We're following a standare layered Spring Boot architecture:
 
 
 ## How to Run:
+1. Clone the repo
 
+2. Run the app
+
+  `./mvnw spring-boot:run`
+
+3. Open in browser
+
+  `http://localhost:8080`
 
 
