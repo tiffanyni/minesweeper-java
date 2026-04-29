@@ -4,32 +4,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.querySelector('.login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent actual form submission
+            event.preventDefault(); // Prevent default form submission
             login();
         });
     }
 });
 
 function login() {
-    // TODO: Replace with real API request
-    const username = document.querySelector('input[name="username"]');
-    const password = document.querySelector('input[name="password"]');
-    const userVal = username.value;
-    const passVal = password.value;
-    console.log('Fake login with:', { username: userVal, password: passVal });
-    // Simulate API call
-    setTimeout(() => {
-        if (userVal === 'user' && passVal === 'pass') {
-            // Success: redirect to /game
+    const username = document.querySelector('input[name="username"]').value;
+    const password = document.querySelector('input[name="password"]').value;
+
+    // Send login request to backend API
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Login successful - redirect to game page
             window.location.href = '/game';
         } else {
-            // Failure: show error, clear fields
+            // Login failed - show error message
             const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = 'Login failed. Your username or password was incorrect.';
+            errorDiv.textContent = data.message;
             errorDiv.style.display = 'block';
-            username.value = '';
-            password.value = '';
-            username.focus();
+            document.querySelector('input[name="username"]').value = '';
+            document.querySelector('input[name="password"]').value = '';
+            document.querySelector('input[name="username"]').focus();
         }
-    }, 500);
+    })
+    .catch(error => {
+        console.error('Login error:', error);
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = 'An error occurred during login. Please try again.';
+        errorDiv.style.display = 'block';
+    });
 }
