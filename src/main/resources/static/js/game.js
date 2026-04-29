@@ -1,197 +1,132 @@
-const DIFFICULTIES = {
-    easy: { size: 8, mines: 10 },
-    medium: { size: 10, mines: 30 },
-    hard: { size: 12, mines: 60 }
-};
-
 let game = {
-    size: 8,
-    mines: 10,
     board: [],
-    revealed: [],
-    flagged: [],
+    rows: 8,
+    cols: 8,
+    totalMines: 10,
+    flaggedCount: 0,
+    cellsLeft: 0,
     gameOver: false,
     won: false,
-    difficulty: 'easy'
+    difficulty: 'easy',
+    status: 'playing'
 };
 
-// Initialize game
-function initGame() {
-    const diffConfig = DIFFICULTIES[game.difficulty];
-    game.size = diffConfig.size;
-    game.mines = diffConfig.mines;
-    game.board = Array(game.size * game.size).fill(0);
-    game.revealed = Array(game.size * game.size).fill(false);
-    game.flagged = Array(game.size * game.size).fill(false);
-    game.gameOver = false;
-    game.won = false;
-
-    placeMines();
-    calculateNumbers();
-    updateUI();
-    renderBoard();
-}
-
-// Place mines randomly
-function placeMines() {
-    let placed = 0;
-    while (placed < game.mines) {
-        const idx = Math.floor(Math.random() * (game.size * game.size));
-        if (game.board[idx] !== 'M') {
-            game.board[idx] = 'M';
-            placed++;
-        }
-    }
-}
-
-// Calculate adjacent mine counts
-function calculateNumbers() {
-    for (let i = 0; i < game.board.length; i++) {
-        if (game.board[i] === 'M') continue;
-
-        let count = 0;
-        const row = Math.floor(i / game.size);
-        const col = i % game.size;
-
-        for (let r = -1; r <= 1; r++) {
-            for (let c = -1; c <= 1; c++) {
-                const newRow = row + r;
-                const newCol = col + c;
-                if (newRow >= 0 && newRow < game.size && newCol >= 0 && newCol < game.size) {
-                    const idx = newRow * game.size + newCol;
-                    if (game.board[idx] === 'M') count++;
-                }
-            }
-        }
-        game.board[i] = count;
-    }
-}
-
-// Reveal a cell
-function revealCell(idx) {
-    if (game.gameOver || game.won || game.revealed[idx] || game.flagged[idx]) return;
-
-    game.revealed[idx] = true;
-
-    if (game.board[idx] === 'M') {
-        game.gameOver = true;
-        revealAllMines();
+// Initialize game by calling backend reset endpoint
+async function initGame() {
+    try {
+        const response = await fetch(`/api/game/reset?difficulty=${game.difficulty}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        updateGameState(data);
         updateUI();
         renderBoard();
-        document.getElementById('gameStatus').textContent = '💥 Game Over! You hit a mine!';
-        document.getElementById('gameStatus').className = 'game-status lose';
-        return;
+    } catch (error) {
+        console.error('Error initializing game:', error);
+        document.getElementById('gameStatus').textContent = '❌ Error loading game';
     }
-
-    // Flood fill for empty cells
-    if (game.board[idx] === 0) {
-        const row = Math.floor(idx / game.size);
-        const col = idx % game.size;
-
-        for (let r = -1; r <= 1; r++) {
-            for (let c = -1; c <= 1; c++) {
-                const newRow = row + r;
-                const newCol = col + c;
-                if (newRow >= 0 && newRow < game.size && newCol >= 0 && newCol < game.size) {
-                    const nIdx = newRow * game.size + newCol;
-                    if (!game.revealed[nIdx]) {
-                        revealCell(nIdx);
-                    }
-                }
-            }
-        }
-    }
-
-    checkWin();
-    updateUI();
-    renderBoard();
 }
 
-// Toggle flag on a cell
-function toggleFlag(idx, e) {
+// Call backend to reveal a cell
+async function revealCell(row, col) {
+    if (game.gameOver || game.won) return;
+
+    try {
+        const response = await fetch(`/api/game/reveal?row=${row}&col=${col}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        updateGameState(data);
+        updateUI();
+        renderBoard();
+
+        // Update game status message
+        if (data.status === 'won') {
+            document.getElementById('gameStatus').textContent = '🎉 You Won!';
+            document.getElementById('gameStatus').className = 'game-status win';
+        } else if (data.status === 'lost') {
+            document.getElementById('gameStatus').textContent = '💥 Game Over! You hit a mine!';
+            document.getElementById('gameStatus').className = 'game-status lose';
+        }
+    } catch (error) {
+        console.error('Error revealing cell:', error);
+    }
+}
+
+// Call backend to toggle flag on a cell
+async function toggleFlag(row, col, e) {
     e.preventDefault();
-    if (game.gameOver || game.won || game.revealed[idx]) return;
+    if (game.gameOver || game.won) return;
 
-    game.flagged[idx] = !game.flagged[idx];
-    checkWin();
-    updateUI();
-    renderBoard();
-}
-
-// Reveal all mines when game over
-function revealAllMines() {
-    for (let i = 0; i < game.board.length; i++) {
-        if (game.board[i] === 'M') {
-            game.revealed[i] = true;
-        }
-    }
-}
-
-// Check if player won
-function checkWin() {
-    let cellsToReveal = 0;
-    for (let i = 0; i < game.board.length; i++) {
-        if (game.board[i] !== 'M' && !game.revealed[i]) {
-            cellsToReveal++;
-        }
-    }
-
-    if (cellsToReveal === 0) {
-        game.won = true;
-        game.gameOver = true;
+    try {
+        const response = await fetch(`/api/game/flag?row=${row}&col=${col}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        updateGameState(data);
         updateUI();
         renderBoard();
-        document.getElementById('gameStatus').textContent = '🎉 You Won!';
-        document.getElementById('gameStatus').className = 'game-status win';
+    } catch (error) {
+        console.error('Error toggling flag:', error);
     }
 }
 
-// Update UI information
+// Update local game state with server response
+function updateGameState(data) {
+    game.board = data.board;
+    game.rows = data.rows;
+    game.cols = data.cols;
+    game.totalMines = data.totalMines;
+    game.flaggedCount = data.flaggedCount;
+    game.cellsLeft = data.cellsLeft;
+    game.gameOver = data.gameOver;
+    game.won = data.won;
+    game.status = data.status;
+}
+
+// Update UI information from game state
 function updateUI() {
-    let cellsLeft = 0;
-    for (let i = 0; i < game.board.length; i++) {
-        if (game.board[i] !== 'M' && !game.revealed[i]) {
-            cellsLeft++;
-        }
-    }
-
-    document.getElementById('mineCount').textContent = game.mines;
-    document.getElementById('flagCount').textContent = game.flagged.filter(f => f).length;
-    document.getElementById('cellsLeft').textContent = cellsLeft;
+    document.getElementById('mineCount').textContent = game.totalMines;
+    document.getElementById('flagCount').textContent = game.flaggedCount;
+    document.getElementById('cellsLeft').textContent = game.cellsLeft;
 }
 
-// Render the game board
+// Render the game board from backend Cell[][] array
 function renderBoard() {
     const boardEl = document.getElementById('gameBoard');
     boardEl.innerHTML = '';
-    boardEl.style.gridTemplateColumns = `repeat(${game.size}, 1fr)`;
+    boardEl.style.gridTemplateColumns = `repeat(${game.cols}, 1fr)`;
 
-    for (let i = 0; i < game.board.length; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.dataset.index = i;
+    for (let r = 0; r < game.rows; r++) {
+        for (let c = 0; c < game.cols; c++) {
+            const cellData = game.board[r][c];
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.row = r;
+            cell.dataset.col = c;
 
-        if (game.flagged[i]) {
-            cell.classList.add('flagged');
-            cell.textContent = '🚩';
-        } else if (game.revealed[i]) {
-            cell.classList.add('revealed');
-            if (game.board[i] === 'M') {
-                cell.classList.add('mine');
-                cell.textContent = '💣';
-            } else if (game.board[i] === 0) {
-                cell.classList.add('empty');
-                cell.textContent = '';
-            } else {
-                cell.classList.add(`num-${game.board[i]}`);
-                cell.textContent = game.board[i];
+            if (cellData.flagged) {
+                cell.classList.add('flagged');
+                cell.textContent = '🚩';
+            } else if (cellData.revealed) {
+                cell.classList.add('revealed');
+                if (cellData.mine) {
+                    cell.classList.add('mine');
+                    cell.textContent = '💣';
+                } else if (cellData.neighboringMines === 0) {
+                    cell.classList.add('empty');
+                    cell.textContent = '';
+                } else {
+                    cell.classList.add(`num-${cellData.neighboringMines}`);
+                    cell.textContent = cellData.neighboringMines;
+                }
             }
+
+            cell.addEventListener('click', () => revealCell(r, c));
+            cell.addEventListener('contextmenu', (e) => toggleFlag(r, c, e));
+
+            boardEl.appendChild(cell);
         }
-
-        cell.addEventListener('click', () => revealCell(i));
-        cell.addEventListener('contextmenu', (e) => toggleFlag(i, e));
-
-        boardEl.appendChild(cell);
     }
 }
 
@@ -200,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event listeners
     document.getElementById('resetBtn').addEventListener('click', initGame);
 
+    // Change difficulty if user clicks on difficulty buttons
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
