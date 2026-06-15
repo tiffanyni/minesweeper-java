@@ -49,12 +49,17 @@ public class AuthService {
         return userRepository.findByUsername(username).orElse(null);
     }
 
-    // For development/debugging only — return map of username -> User
+    // For development/debugging only — return User
     public Map<String, User> getAllUsers() {
         List<User> users = userRepository.findAll();
         Map<String, User> map = new HashMap<>();
         for (User u : users) map.put(u.getUsername(), u);
         return map;
+    }
+
+    // For development/debugging only — delete all users
+    public void deleteAllUsers() {
+        userRepository.deleteAll();
     }
 
 

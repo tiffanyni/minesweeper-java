@@ -77,4 +77,15 @@ public class AuthController {
         response.put("users", authService.getAllUsers().keySet()); // Just usernames, not passwords
         return ResponseEntity.ok(response);
     }
+
+    // Debug - delete all users (REMOVE IN PRODUCTION)
+    @DeleteMapping("/api/auth/debug/users/delete")
+    @ResponseBody
+    public ResponseEntity<?> debugDeleteUsers() {
+        authService.deleteAllUsers();
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "All users deleted");
+        return ResponseEntity.ok(response);
+    }
 }
