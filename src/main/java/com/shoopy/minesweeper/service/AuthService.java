@@ -3,63 +3,59 @@ package com.shoopy.minesweeper.service;
 import com.shoopy.minesweeper.dto.LoginRequest;
 import com.shoopy.minesweeper.dto.RegisterRequest;
 import com.shoopy.minesweeper.model.User;
+import com.shoopy.minesweeper.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
-    //responsibilities:
-    //1. register new users
-    //2. check if name already exists
-    //3. hash password
-    //4. verify password during login
-    //5. find a user by username
+    // responsibilities: register, login, find user
 
-    //store users in memory for now, later we can switch to a database
-    private final Map<String, User> users = new HashMap<>(); // username string -> User object
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Autowired
+    private UserRepository userRepository;
+
+    // Persist users to database
     public boolean register(RegisterRequest request) {
         String username = request.getUsername();
+        if (username == null || username.isBlank()) return false;
 
-        //username needs to be unique, so check if it already exists before registering
-        if (users.containsKey(request.getUsername())) {
-            return false;
+        if (userRepository.findByUsername(username).isPresent()) {
+            return false; // already exists
         }
 
-        //hash the password and store the user
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         User user = new User(username, hashedPassword);
-        users.put(username, user);
+        userRepository.save(user);
         return true;
     }
 
     public boolean login(LoginRequest request) {
-        User user = users.get(request.getUsername());
-
-        //user needs to exist in order to log in
-        if (!users.containsKey(request.getUsername())) {
-            return false;
-        }
-
-        //verify password matches the stored hash
+        Optional<User> optionalUser = userRepository.findByUsername(request.getUsername());
+        if (optionalUser.isEmpty()) return false;
+        User user = optionalUser.get();
         return passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
-
     }
 
     public User findByUsername(String username) {
-        return users.get(username);
+        return userRepository.findByUsername(username).orElse(null);
     }
 
-    // For development/debugging only
+    // For development/debugging only — return map of username -> User
     public Map<String, User> getAllUsers() {
-        return users;
+        List<User> users = userRepository.findAll();
+        Map<String, User> map = new HashMap<>();
+        for (User u : users) map.put(u.getUsername(), u);
+        return map;
     }
-
 
 
 }
