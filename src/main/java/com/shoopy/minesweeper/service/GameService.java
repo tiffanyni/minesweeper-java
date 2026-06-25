@@ -15,10 +15,12 @@ public class GameService {
     private boolean gameOver;
     private boolean won;
     private Difficulty currentDifficulty;
+    private boolean boardGenerated;
 
     public GameService(BoardGenerator boardGenerator) {
         this.boardGenerator = boardGenerator;
         this.currentDifficulty = Difficulty.EASY;
+        this.boardGenerated = false;
         initializeGame(Difficulty.EASY);
     }
 
@@ -27,13 +29,27 @@ public class GameService {
         this.rows = difficulty.getRows();
         this.cols = difficulty.getCols();
         this.totalMines = difficulty.getMines();
-        this.board = boardGenerator.generateBoard(difficulty);
+        this.board = new Cell[rows][cols];
+        // initialize the cells, but don't generate mines until user clicks first
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                board[r][c] = new Cell();
+            }
+        }
         this.gameOver = false;
         this.won = false;
+        this.boardGenerated = false;
     }
 
     public void resetGame(Difficulty difficulty) {
         initializeGame(difficulty);
+    }
+
+    public void generateBoardAfterFirstClick(int safeRow, int safeCol) {
+        if (!boardGenerated) {
+            this.board = boardGenerator.generateBoardWithSafeCell(currentDifficulty, safeRow, safeCol);
+            this.boardGenerated = true;
+        }
     }
 
     public Cell[][] getBoard() {
@@ -41,6 +57,10 @@ public class GameService {
     }
 
     public void revealCell(int row, int col) {
+        if (!boardGenerated) {
+            generateBoardAfterFirstClick(row, col);
+        }
+
         if (gameOver || won || !isValidCell(row, col)) return;
 
         Cell cell = board[row][col];

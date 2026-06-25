@@ -8,10 +8,15 @@ import org.springframework.stereotype.Service;
 public class BoardGenerator {
 
         public Cell[][] generateBoard(Difficulty difficulty) {
+            return generateBoardWithSafeCell(difficulty, -1, -1); // No safe cell specified
+        }
+
+        // ensures that no bombs are placed at the safe cell; used when the user clicks on a cell for the first time
+        public Cell[][] generateBoardWithSafeCell(Difficulty difficulty, int safeRow, int safeCol) {
             int rows = difficulty.getRows();
             int cols = difficulty.getCols();
             int mines = difficulty.getMines();
-            
+
             Cell[][] board = new Cell[rows][cols];
 
             // Initialize all cells
@@ -21,16 +26,18 @@ public class BoardGenerator {
                 }
             }
 
-            // Place mines randomly
+            // Place mines randomly, but avoid the safe cell and its neighbors
             for (int i = 0; i < mines; ) {
                 int r = (int) (Math.random() * rows);
                 int c = (int) (Math.random() * cols);
-                if (!board[r][c].isMine()) { // No mine here yet
-                    board[r][c].setMine(true);
-                    i++;
+                // Check if the cell is the safe cell or its neighbors
+                if (board[r][c].isMine() || (r == safeRow && c == safeCol) || (Math.abs(r - safeRow) <= 1 && Math.abs(c - safeCol) <= 1)) {
+                    continue; // Skip if it's already a mine or if it's the safe cell or its neighbors
                 }
-            }
+                board[r][c].setMine(true);
+                i++;
 
+            }
             // Calculate neighboring mines for each cell
             for (int r = 0; r < rows; r++) {
                 for (int c = 0; c < cols; c++) {
@@ -48,5 +55,6 @@ public class BoardGenerator {
             }
 
             return board;
+
         }
 }
