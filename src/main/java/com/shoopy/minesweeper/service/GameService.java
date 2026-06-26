@@ -103,6 +103,34 @@ public class GameService {
         }
     }
 
+    // chordReveal: when the player clicks an already revealed numbered cell, if the flag count matches the cell's
+    // neighboringMines value, reveal all remaining unflagged neighbors at once.
+    //
+    // Why it works: if the player has correctly flagged exactly the right mines,
+    // every unflagged neighbor is guaranteed safe, and so we can reveal them all at once
+    //
+    // If a flag was placed incorrectly, revealCell will hit a mine and trigger
+    // game-over
+    public void chordReveal(int row, int col) {
+        if (gameOver || won || !isValidCell(row, col)) return;
+
+        Cell cell = board[row][col];
+        if (!cell.isRevealed() || cell.isMine() || cell.getNeighboringMines() == 0) return;
+
+        int flagCount = 0;
+        for (int dr = -1; dr <= 1; dr++)
+            for (int dc = -1; dc <= 1; dc++)
+                if (isValidCell(row + dr, col + dc) && board[row + dr][col + dc].isFlagged())
+                    flagCount++;
+
+        if (flagCount != cell.getNeighboringMines()) return; //do nothing if the flag count doesn't match the number on the cell
+
+        for (int dr = -1; dr <= 1; dr++)
+            for (int dc = -1; dc <= 1; dc++)
+                if (isValidCell(row + dr, col + dc) && !board[row + dr][col + dc].isFlagged())
+                    revealCell(row + dr, col + dc);
+    }
+
     public void toggleFlag(int row, int col) {
         if (gameOver || won || !isValidCell(row, col)) return;
 

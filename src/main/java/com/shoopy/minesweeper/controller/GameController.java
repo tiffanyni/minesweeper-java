@@ -46,6 +46,14 @@ public class GameController {
         return getBoardState();
     }
 
+    // POST endpoint for chord reveal (left-click on a revealed cell with the correct number of adjacent flags)
+    @PostMapping("/api/game/chord")
+    @ResponseBody
+    public Map<String, Object> chordReveal(@RequestParam int row, @RequestParam int col) {
+        gameService.chordReveal(row, col);
+        return getBoardState();
+    }
+
     // GET endpoint to return the current game state as JSON
     @GetMapping("/api/game/state")
     @ResponseBody
