@@ -53,6 +53,31 @@ async function revealCell(row, col) {
     }
 }
 
+// call backend to chord reveal a cell (reveal neighbors if conditions met)
+async function chordReveal(row, col) {
+    if (game.gameOver || game.won) return;
+
+    try {
+        const response = await fetch(`/api/game/chord?row=${row}&col=${col}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        updateGameState(data);
+        updateUI();
+        renderBoard();
+
+        if (data.status === 'won') {
+            document.getElementById('gameStatus').textContent = '🎉 You Won!';
+            document.getElementById('gameStatus').className = 'game-status win';
+        } else if (data.status === 'lost') {
+            document.getElementById('gameStatus').textContent = '💥 Game Over! You hit a mine!';
+            document.getElementById('gameStatus').className = 'game-status lose';
+        }
+    } catch (error) {
+        console.error('Error chord revealing cell:', error);
+    }
+}
+
 // Call backend to toggle flag on a cell
 async function toggleFlag(row, col, e) {
     e.preventDefault();
@@ -122,7 +147,14 @@ function renderBoard() {
                 }
             }
 
-            cell.addEventListener('click', () => revealCell(r, c));
+            cell.addEventListener('click', () => {
+                if (cellData.revealed && cellData.neighboringMines > 0) {
+                    chordReveal(r, c);
+                } else {
+                    revealCell(r, c);
+                }
+            });
+
             cell.addEventListener('contextmenu', (e) => toggleFlag(r, c, e));
 
             boardEl.appendChild(cell);
