@@ -109,6 +109,20 @@ function updateGameState(data) {
     game.status = data.status;
 }
 
+// Returns true if the player has made progress in the current game; used for confirming if player actually wants to return to menu
+function hasProgress() {
+    if (!game.board || !game.board.length) return false;
+    for (let r = 0; r < game.rows; r++) {
+        for (let c = 0; c < game.cols; c++) {
+            const cell = game.board[r][c];
+            if (cell.revealed || cell.flagged) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Update UI information from game state
 function updateUI() {
     document.getElementById('mineCount').textContent = game.totalMines;
@@ -166,6 +180,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listeners
     document.getElementById('resetBtn').addEventListener('click', initGame);
+
+    // Confirm navigation for return button if game in progress
+    //TODO: once we implement a "save game" feature, we can change this confirmation message and allow users to return to menu without losing progress
+    const returnBtn = document.getElementById('returnBtn');
+    if (returnBtn) {
+        returnBtn.addEventListener('click', function (e) {
+            // If the game is still active and player has started playing, ask to confirm
+            if (!game.gameOver && !game.won && hasProgress()) {
+                e.preventDefault();
+                const ok = confirm('You have an in-progress game. Are you sure you want to return to the menu? Your current game will be lost.');
+                if (ok) {
+                    window.location.href = this.href;
+                }
+            }
+        });
+    }
 
     // Change difficulty if user clicks on difficulty buttons
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
