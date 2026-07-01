@@ -176,6 +176,21 @@ button {
     transform: translateY(0);
 }
 
+/* Return to menu button */
+.btn-return {
+    margin-left: 8px;
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 12px;
+    background: #667eea;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.btn-return:hover {
+    background: #115293;
+}
+
 .game-status {
     margin-top: 20px;
     padding: 15px;
